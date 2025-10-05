@@ -1,67 +1,3 @@
-# # app.py
-# import streamlit as st
-# from db_helper import init_db, add_user, verify_user
-
-# # ----- إنشاء الجدول لو مش موجود -----
-# init_db()
-
-# # ----- إعداد الصفحة -----
-# st.set_page_config(page_title="Power BI Secure Dashboard", page_icon="📊", layout="wide")
-
-# # ----- الحالة -----
-# if "logged_in" not in st.session_state:
-#     st.session_state.logged_in = False
-
-# # ----- واجهة تسجيل الدخول -----
-# if not st.session_state.logged_in:
-#     st.title("🔐 تسجيل الدخول إلى Power BI Dashboard")
-#     choice = st.sidebar.selectbox("اختر الإجراء", ["تسجيل الدخول", "إنشاء حساب جديد"])
-
-#     if choice == "تسجيل الدخول":
-#         username = st.text_input("👤 اسم المستخدم")
-#         password = st.text_input("🔑 كلمة المرور", type="password")
-
-#         if st.button("تسجيل الدخول"):
-#             if verify_user(username, password):
-#                 st.session_state.logged_in = True
-#                 st.session_state.username = username
-#                 st.success("✅ تم تسجيل الدخول بنجاح")
-#                 st.experimental_rerun()
-#             else:
-#                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
-
-#     elif choice == "إنشاء حساب جديد":
-#         new_user = st.text_input("👤 اسم المستخدم الجديد")
-#         new_pass = st.text_input("🔑 كلمة المرور الجديدة", type="password")
-#         if st.button("إنشاء الحساب"):
-#             try:
-#                 add_user(new_user, new_pass)
-#                 st.success("🎉 تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.")
-#             except Exception as e:
-#                 st.error("⚠️ هذا الاسم مستخدم بالفعل. اختر اسمًا آخر.")
-
-# # ----- واجهة Power BI بعد تسجيل الدخول -----
-# else:
-#     st.sidebar.success(f"مرحبًا {st.session_state.username} 👋")
-#     if st.sidebar.button("تسجيل الخروج"):
-#         st.session_state.logged_in = False
-#         st.experimental_rerun()
-
-#     st.title("📊 Power BI Dashboard")
-
-#     st.markdown("""
-#     <div style="text-align:center; font-size:18px; margin-bottom:20px;">
-#         تم تسجيل الدخول بنجاح ✅<br>
-#         يمكنك الآن استعراض لوحة التحكم الخاصة بك.
-#     </div>
-#     """, unsafe_allow_html=True)
-
-#     # 🔗 ضيفي هنا رابط Power BI بتاعك
-#     powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiYOUR_LINK_HERE..."
-#     st.components.v1.iframe(powerbi_url, width=1200, height=700)
-    
-
-# app.py
 import streamlit as st
 import pandas as pd
 import bcrypt
@@ -173,4 +109,5 @@ else:
     
 
 powerbi_url =  "https://app.powerbi.com/groups/2635067f-8f70-46fe-a674-e7247b462fb2/dashboards/32d6b2e5-2dd5-4e89-af60-2fd4d3c01f0f?experience=power-bi&subfolderId=25289"
+
 st.components.v1.iframe(powerbi_url, width=1200, height=700)
