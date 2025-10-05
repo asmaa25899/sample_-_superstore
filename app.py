@@ -107,7 +107,7 @@ else:
 
     # powerbi_url = "https://app.powerbi.com/groups/2635067f-8f70-46fe-a674-e7247b462fb2/reports/435fa762-fa3e-48e7-badd-4d1e48cba146/6f4a53caf8436a03514e?experience=power-bi"
     
-
-powerbi_url =  "https://app.powerbi.com/groups/2635067f-8f70-46fe-a674-e7247b462fb2/dashboards/32d6b2e5-2dd5-4e89-af60-2fd4d3c01f0f?experience=power-bi&subfolderId=25289"
-
+powerbi_url =  "https://github.com/asmaa25899/sample_-_superstore.git"
 st.components.v1.iframe(powerbi_url, width=1200, height=700)
+
+
