@@ -1,27 +1,27 @@
+
 import streamlit as st
 import pandas as pd
 import bcrypt
 import os
 
 # ---------- إعداد الصفحة ----------
-st.set_page_config(page_title="Power BI Login", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Tableau Login", page_icon="📊", layout="wide")
 
 # ---------- إعداد مسار ملف المستخدمين ----------
 FILE_PATH = "users.xlsx"
 
-# ---------- بيانات المستخدم الافتراضي (اللي طلبتيها) ----------
+# ---------- بيانات المستخدم الافتراضي ----------
 DEFAULT_USER = {
     "username": "asmaa25899@gmail.com",
     "password": "asmaa25899"
 }
 
-# ---------- دالة لتشفير الباسورد (تُعيد سترينج) ----------
+# ---------- دالة لتشفير الباسورد ----------
 def hash_password(plain_password: str) -> str:
     return bcrypt.hashpw(plain_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# ---------- إنشاء الملف وادخال المستخدم الافتراضي لو الملف مش موجود ----------
+# ---------- إنشاء الملف لو مش موجود ----------
 if not os.path.exists(FILE_PATH):
-    # نجهّز داتا فريم بمستخدم افتراضي مشفّر
     hashed = hash_password(DEFAULT_USER["password"])
     df = pd.DataFrame({
         "username": [DEFAULT_USER["username"]],
@@ -32,21 +32,33 @@ if not os.path.exists(FILE_PATH):
 # ---------- تحميل بيانات المستخدمين ----------
 users_df = pd.read_excel(FILE_PATH)
 
-# ---------- دالة حفظ المستخدمين إلى Excel ----------
+# ---------- دالة حفظ المستخدمين ----------
 def save_users(df):
     df.to_excel(FILE_PATH, index=False)
 
-# ---------- دالة التحقق من المستخدم ----------
+# ---------- دالة التحقق ----------
 def verify_user(username, password):
     global users_df
     user = users_df[users_df["username"] == username]
+
     if not user.empty:
-        # القيمة الموجودة في الملف عبارة عن سترينج تمثل ال-hash
-        stored_hash = user["password"].values[0].encode('utf-8')
-        return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
+        stored_hash = user["password"].values[0]
+
+        # معالجة أي قيمة غير نصية أو NaN
+        if not isinstance(stored_hash, str) or stored_hash.strip() == "" or str(stored_hash).lower() == "nan":
+            st.error("⚠️ كلمة المرور المخزنة غير صالحة. أعد إنشاء الحساب.")
+            return False
+
+        try:
+            stored_hash = stored_hash.encode('utf-8')
+            return bcrypt.checkpw(password.encode('utf-8'), stored_hash)
+        except Exception as e:
+            st.error(f"حدث خطأ أثناء التحقق من كلمة المرور: {e}")
+            return False
+
     return False
 
-# ---------- دالة إضافة مستخدم جديد ----------
+# ---------- دالة إضافة مستخدم ----------
 def add_user(username, password):
     global users_df
     hashed = hash_password(password)
@@ -57,10 +69,12 @@ def add_user(username, password):
 # ---------- حالة الجلسة ----------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "show_dashboard" not in st.session_state:
+    st.session_state.show_dashboard = False
 
 # ---------- واجهة تسجيل الدخول ----------
 if not st.session_state.logged_in:
-    st.title("🔐 تسجيل الدخول إلى لوحة Power BI")
+    st.title("🔐 تسجيل الدخول إلى لوحة Tableau")
 
     option = st.sidebar.selectbox("اختر الإجراء", ["تسجيل الدخول", "إنشاء حساب جديد"])
 
@@ -72,7 +86,8 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.username = username
                 st.success("✅ تم تسجيل الدخول بنجاح")
-                st.experimental_rerun()
+                st.rerun()
+
             else:
                 st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
 
@@ -86,28 +101,33 @@ if not st.session_state.logged_in:
                 add_user(new_user, new_pass)
                 st.success("🎉 تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.")
 
-# ---------- واجهة Power BI بعد الدخول ----------
+# ---------- واجهة Tableau بعد الدخول ----------
 else:
     st.sidebar.success(f"مرحبًا {st.session_state.username} 👋")
-    if st.sidebar.button("تسجيل الخروج"):
+    if st.sidebar.button("🔓 تسجيل الخروج"):
         st.session_state.logged_in = False
-        st.experimental_rerun()
+        st.session_state.show_dashboard = False
+        st.rerun()
 
-    st.title("📊 Power BI Dashboard")
 
-    st.markdown("""
-    <div style="text-align:center; font-size:18px; margin-bottom:20px;">
-        ✅ تم تسجيل الدخول بنجاح<br>
-        يمكنك الآن استعراض لوحة التحكم الخاصة بك.
-    </div>
-    """, unsafe_allow_html=True)
+    st.title("📊 Tableau Dashboard")
 
-    # 🔗 هنا ضعي رابط الـ Power BI بتاعك (استبدلي YOUR_LINK_HERE بالرابط الفعلي)
-    # powerbi_url = "https://app.powerbi.com/view?r=eyJrIjoiYOUR_LINK_HERE..."
+    if not st.session_state.show_dashboard:
+        st.markdown("""
+        <div style="text-align:center; font-size:18px; margin-bottom:20px;">
+            ✅ تم تسجيل الدخول بنجاح<br>
+            اضغط على الزر أدناه لعرض لوحة Tableau الخاصة بك.
+        </div>
+        """, unsafe_allow_html=True)
 
-    # powerbi_url = "https://app.powerbi.com/groups/2635067f-8f70-46fe-a674-e7247b462fb2/reports/435fa762-fa3e-48e7-badd-4d1e48cba146/6f4a53caf8436a03514e?experience=power-bi"
-    
-powerbi_url =  "https://github.com/asmaa25899/sample_-_superstore.git"
-st.components.v1.iframe(powerbi_url, width=1200, height=700)
+        if st.button("🚀 عرض الداشبورد"):
+            st.session_state.show_dashboard = True
+            st.rerun()
 
+
+    else:
+        tableau_url = "https://public.tableau.com/views/FinalPoject_3/Dashboard2?:language=en-US&:display_count=n&:origin=viz_share_link"
+        st.components.v1.iframe(tableau_url, width=1200, height=750)
+
+        st.info("🔹 يمكنك التمرير أو التكبير داخل لوحة Tableau.")
 
